@@ -4,7 +4,7 @@
     <div class="container" v-if="num">
         <div class="qrcode-wp">
             <div id="qrcode" class="qrcode" ref="qrCodeUrl">
-                <img v-if="item.type==2" :src="item.qrcode_url" alt="">
+                <img v-if="item.type==2" :src="`data:image/png;base64,${item.qrcode_url}`" alt="">
             </div>
         </div>
         <div class="timer">
@@ -168,9 +168,10 @@ export default {
             display: flex;
             justify-content: center;
             text-align: center;
-            // img {
-            //     width: 100%;
-            // }
+            img {
+                width: 200px;
+                height: 200px;
+            }
         }
     }
     .timer {

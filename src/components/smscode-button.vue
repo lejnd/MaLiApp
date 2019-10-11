@@ -57,6 +57,10 @@ export default {
         round: {
             type: Boolean,
             default: () => false,
+        },
+        apiurl: {
+            type: String,
+            default: () => '/api/User/RegisterVerifyCode'
         }
     },
     data() {
@@ -105,7 +109,7 @@ export default {
                     done(false);
                     return false
                 }
-                this.$fly.get('/api/User/RegisterVerifyCode', {
+                this.$fly.get(this.apiurl, {
                     tel: this.mobile,
                     imgCode: this.imgCode,
                 }).then((res) => {

@@ -101,6 +101,11 @@ export default new Router({
             path: '/user/provcode',
             name: 'UserProvcode',
             component: () => import(/* webpackChunkName: "UserProvcode" */ './views/userProvcode.vue')
+        },
+        {
+            path: '/user/password',
+            name: 'UserPassword',
+            component: () => import(/* webpackChunkName: "UserPassword" */ './views/userPassword.vue')
         }
     ]
 })

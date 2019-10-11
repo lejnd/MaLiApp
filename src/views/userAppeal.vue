@@ -52,6 +52,9 @@ export default {
             })).then((res) => {
                 let { returnCode, returnMsg, data } = res;
                 this.$toast(returnMsg);
+                if (returnCode == 100) {
+                    this.$router.push('/user/appealist')
+                }
             })
         },
         gotoList() {
@@ -59,7 +62,9 @@ export default {
         }
     },
     mounted() {
-        
+        if (this.$route.query.id) {
+            this.taskId = this.$route.query.id
+        }
     },
 }
 </script>

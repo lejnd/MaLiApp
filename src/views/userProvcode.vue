@@ -3,7 +3,10 @@
     <topbar title="设置归属地"></topbar>
     <div class="container">
         <section class="form-block">
-            <h2 class="form-title">选择当前归属省份</h2>
+            <h2 class="form-title">
+                <span>选择当前归属省份</span>
+                <van-button class="btn" plain size="mini" icon="aim" type="info" @click="getGeo">自动获取定位</van-button>
+            </h2>
             <div class="region-wp">
                 <div class="region-row">
                     <h3>归属地</h3>
@@ -113,7 +116,7 @@ export default {
             this.toast = this.$toast.loading({
                 duration: 0,       // 持续展示 toast
                 forbidClick: true, // 禁用背景点击
-                message: '获取定位...'
+                message: '正在获取定位'
             });
             if (!window.plus) {
                 console.log(1111);
@@ -197,8 +200,7 @@ export default {
                     vm.isDisabled = false;
                 })
             }
-        }
-            
+        }  
     },
     mounted() { 
         // this.getProvinceByTel().then(() => {
@@ -228,6 +230,11 @@ export default {
                 color: rgba(69, 90, 100, 0.6);
                 font-weight: normal;
                 font-size: 14px;
+                display: flex;
+                justify-content: space-between;
+                .btn {
+                    padding: 0 8px;
+                }
             }
             .region-wp {
                 margin-bottom: 15px;

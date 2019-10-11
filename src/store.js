@@ -8,12 +8,14 @@ const vm = Vue.prototype;
 
 const state = {
     tasks: [],
+    taskTotal: 0,
     userInfo: {},
     noticeId: '',
 }
 
 const getters = {
     tasks: (state) => state.tasks,
+    taskTotal: (state) => state.taskTotal,
     userInfo: (state) => state.userInfo,
     noticeId: (state) => state.noticeId,
 }
@@ -53,8 +55,9 @@ const actions = {
 }
 
 const mutations = {
-    getTasks(state, tasks) {
-        state.tasks = tasks;
+    getTasks(state, data) {
+        state.tasks = data.taskLists;
+        state.taskTotal = data.total;
     },
     removeTask(state, id) {
         state.tasks = state.tasks.filter((task) => task.task_id != id);

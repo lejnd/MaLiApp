@@ -4,6 +4,7 @@
     <van-tabs class="blueStyle" v-model="active" @change="changeTab">
         <van-tab title="待抢订单">
             <div class="container">
+                <van-tag mark type="warning">{{taskTotal ? `${taskTotal}单待抢` : '暂无订单'}}</van-tag>
                 <div class="btn-group">
                     <div class="flex1">
                         <van-dropdown-menu>
@@ -16,21 +17,21 @@
                             />
                         </van-dropdown-menu>
                     </div>
-                    <van-button class="btn" icon="replay" :loading="replayBtnLoading" plain type="info" @click="replay" size="small">刷新任务</van-button>
-                    <van-button class="btn" type="info" :disabled="autoBtnLoading" @click="autodo" size="small">自动抢单</van-button>
+                    <van-button class="btn" icon="replay" :loading="replayBtnLoading" plain type="info" @click="replay" size="mini">刷新任务</van-button>
+                    <van-button class="btn" type="info" :disabled="autoBtnLoading" @click="autodo" size="mini">自动抢单</van-button>
                     <!-- <van-button class="btn" type="info" @click="autoReplay" size="small">自动刷新</van-button> -->
                 </div>
                 <div class="list-wp">
-                    <div class="nothing" v-if="tasks.length <= 0">
+                    <div class="nothing" v-if="nothing">
                         {{nothingText}}
                     </div>
-                    <div class="item" v-for="(task, index) in tasks" :key="index">
+                    <div class="item" v-for="(task, index) in taskList" :key="index">
                         <div class="item-row">
                             <div class="work-id">
                                 <p class="order">任务ID：<span>{{task.task_id}}</span></p>
                                 <p class="region"><span>{{task.province_name}}</span></p>
                             </div>
-                            <div class="price">赏金：<span>{{task.price.toFixed(2)}}</span></div>
+                            <div class="price">赏金：<span>{{task.price}}</span></div>
                         </div>
                         <div class="item-row">
                             <div class="timer">
@@ -52,7 +53,7 @@
                 <div class="item" v-for="task in aList" :key="task.id">
                     <div class="item-row">
                         <div class="work-id">任务ID：<span>{{task.task_id}}</span></div>
-                        <div class="price">赏金：<span>{{task.price.toFixed(2)}}</span></div>
+                        <div class="price">赏金：<span>{{task.price}}</span></div>
                     </div>
                     <div class="item-row">
                         <div class="timer">
@@ -65,9 +66,12 @@
             </div>
         </van-tab>
     </van-tabs>
-    <!-- <router-link class="side-btn0" to="/user/provcode">
-        <span>设<br>置<br>归<br>属<br>地</span>
-    </router-link> -->
+    <router-link class="side-btn00" to="/user/provcode">
+        <span>获<br>取<br>定<br>位</span>
+    </router-link>
+    <div class="side-btn0" @click="getNotice">
+        <span>公<br>告</span>
+    </div>
     <router-link class="side-btn" to="/course">
         <span>接<br>单<br>教<br>程</span>
     </router-link>
@@ -92,15 +96,13 @@ import { mapGetters, mapActions } from 'vuex';
 import common from '../components/common'
 import DateSelect from '@/components/date-select.vue';
 import config from '../config';
-import { log } from 'util';
-
-const TEXT = '接单会员接单请根据自己所在省份接对应省份订单，同省份订单大量不填资料。各级接单会员务必实事求是接对应省份订单，同省份辅助，发展本省资源，吃肉！务必实事求是选择自己所在地省份，这样才能保证单量稳定，价格稳定。'
 
 export default {
     name: 'Home',
     components: { TabBar, Overtime, DateSelect },
     data() {
         return {
+            nothing: false,
             nothingText: '',
             showAutodo: false,
             autodoTimer: -1,
@@ -117,7 +119,14 @@ export default {
         ...mapGetters([
             'tasks',
             'userInfo',
-        ])
+            'taskTotal',
+        ]),
+        taskList() {
+            let list = this.tasks || [];
+            return list.map(item => Object.assign({}, item, {
+                price: item.price.toFixed(2),
+            }))
+        }
     },
     methods: {
         ...mapActions([
@@ -128,13 +137,15 @@ export default {
         getTasksHandler(toast) {
             this.getTasks(this.region).then(() => {
                 toast ? toast.clear() : false;
-                this.nothingText = TEXT;
+                this.nothing = this.tasks.length == 0;
+                this.getNothingText()
             }).catch(() => {
                 toast ? toast.clear() : false;
                 this.$toast('刷新失败，请重试')
             })
         },
         replay() {
+            this.nothing = false;
             const toast = this.$toast.loading({
                 duration: 0,       // 持续展示 toast
                 forbidClick: true, // 禁用背景点击
@@ -176,7 +187,11 @@ export default {
             });       
         },
         handleTask(task) {
-            let canHandle = task.province_code == '0' || task.province_code == '1';
+            let canHandle = task.province_code == '0' ||
+                task.province_code == '1' ||
+                task.province_code == '710000' ||
+                task.province_code == '810000' ||
+                task.province_code == '820000' || task.province_code == '990000';
             if (!canHandle && task.province_code != this.userInfo.provcode) {
                 this.$dialog.alert({
                     title: '提示',
@@ -235,8 +250,8 @@ export default {
                 if (returnCode == 100) {
                     return Promise.resolve();
                 } else {
-                    this.$toast('领取任务数量超过限制');
-                    return Promise.reject('领取任务数量超过限制');
+                    this.$toast(returnMsg);
+                    return Promise.reject(returnMsg);
                 }
             })
         },
@@ -249,14 +264,13 @@ export default {
         removeOrderTask(id) {
             setTimeout(() => {
                 this.aList = this.aList.filter((task) => task.task_id != id);
-                console.log(this.aList)
             }, 0);
             // this.$fly.get('/api/Task/TaskOverTime', common.connectObj({
             //     taskId: id
             // }))
         },
         getTaskCenter() {
-            this.nothingText = '';
+            this.nothing = false;
             this.$fly.get('/api/Task/GetTaskCenter', common.connectObj({
                 dateTime: this.$moment(new Date()).format('YYYY-MM-DD'),
             }))
@@ -264,7 +278,11 @@ export default {
                 let { returnCode, returnMsg, data } = res;
                 this.nothingText = '暂无数据'
                 if (returnCode == 100) {
-                    this.aList = data.filter((item) => item.task_status == 1);
+                    let list = data.filter((item) => item.task_status == 1);
+                    this.aList = list.map(item => Object.assign({}, item, {
+                        price: item.price.toFixed(2),
+                    }))
+                    this.nothing = this.aList.length == 0
                 } else {
                     this.$toast(returnMsg);
                 }
@@ -304,6 +322,31 @@ export default {
         },
         regionClose() {
             document.body.style['overflow-y'] = 'auto'
+        },
+        // 公告
+        getNotice() {
+            return this.$fly.get('/api/Task/GetNotice', { type: 1 })
+            .then((res) => {
+                let { returnCode, returnMsg, data } = res;
+                if (returnCode == 100) {
+                    this.$dialog.alert({
+                        title: '公告',
+                        message: data.content,
+                        messageAlign: 'left',
+                        confirmButtonText: '了解了'
+                    })
+                }             
+            })
+        },
+        // 获取首页空白文字
+        getNothingText() {
+            return this.$fly.get('/api/Task/GetNotice', { type: 4 })
+            .then((res) => {
+                let { returnCode, returnMsg, data } = res;
+                if (returnCode == 100) {
+                    this.nothingText = data.content;
+                }             
+            })
         }
     },
     created () {
@@ -319,6 +362,8 @@ export default {
     mounted() {
         this.getRegionList();
         this.autoBtnLoading = false;
+        // 公告alert
+        this.getNotice()
     },
 }
 </script>
@@ -346,21 +391,22 @@ export default {
         .van-dropdown-menu__title {
             color: #767676;
             font-size: 13/11rem;
-            // padding: 0 8px 0 0;
+            padding: 0 8px 0 0;
         }
     }
     .container {
         padding: 16/11rem;
         .btn-group {
             display: flex;
+            align-items: center;
             .flex1 {
                 flex: 1;
             }
             .btn {
-                width: 90px;
+                padding: 0 8px;
                 margin-right: 10px;
                 border-radius: 6px;
-                height: 38px;
+                height: 30px;
                 box-shadow: 0 0 8px #c4dbff;
                 border: 0;
                 &:last-child {
@@ -431,6 +477,17 @@ export default {
         padding: 30px 0;
         display: flex;
         justify-content: center;
+    }
+    .side-btn00 {
+        position: fixed;
+        left: 0;
+        bottom: 244px;
+        background-color: @my_blue;
+        padding: 10px 7px;
+        border-radius: 0 6px 6px 0;
+        font-size: 12px;
+        color: #fffbe8;
+        box-shadow: 0 0 6px #aaa;
     }
     .side-btn0 {
         position: fixed;

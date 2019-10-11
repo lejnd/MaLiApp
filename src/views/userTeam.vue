@@ -8,12 +8,13 @@
             placeholder="请输入下级的账号"
             show-action
             shape="round"
-            @search="getTeamList"
+            @search="searchHandler"
         >
-            <van-button slot="action" @click="getTeamList" type="info" round size="small">搜索</van-button>
+            <van-button slot="action" @click="searchHandler" type="info" round size="small">搜索</van-button>
         </van-search>
         <div class="deco">
-            <span>下级总数：{{teamList.length}}</span>
+            <span>直接下级：{{childNum}}</span>
+            <span>团队总数：{{teamNum}}</span>
             <!-- <span class="handle">设置下级抽成</span> -->
         </div>
     </div>
@@ -37,6 +38,13 @@
                 <p><van-button type="info" size="small" @click="rateSetting(index, 'rate')">重设利润</van-button></p>
             </div>
         </div>
+        <van-pagination
+            v-if="childNum > 50"
+            v-model="currentPage" 
+            :page-count="pageCount"
+            @change="getTeamList"
+            mode="simple"
+        />
     </div>
     <van-dialog
         v-model="showRateSetting"
@@ -87,6 +95,8 @@ import DateSelect from '@/components/date-select.vue';
 import common from '../components/common'
 import { mapActions, mapGetters } from 'vuex';
 
+const PAGE_SIZE = 50;
+
 export default {
     name: 'UserTeam',
     components: { Topbar, DateSelect },
@@ -94,6 +104,8 @@ export default {
         return {
             formDate: '',
             searchTel: '',
+            childNum: '',     // 直接下级总数
+            teamNum: '',      // 团队总数
             teamList: [],
             showRateSetting: false,
             showRemarkSetting: false,
@@ -102,6 +114,7 @@ export default {
             rate: 0,
             titleRadio: '1',
             remak_name: '',
+            currentPage: 1,
         };
     },
     computed: {
@@ -110,6 +123,9 @@ export default {
         ]),
         subEstimatedPrice() {
             return (this.estimatedPrice - this.estimatedPrice * this.rate/100).toFixed(2);
+        },
+        pageCount() {
+            return Math.ceil(this.childNum / PAGE_SIZE);
         }
     },
     methods: {
@@ -119,15 +135,24 @@ export default {
         getDate(date) {
             this.formDate = date;
         },
+        searchHandler() {
+            this.currentPage = 1;
+            this.getTeamList();
+        },
         getTeamList() {
             this.$fly.get('/api/User/GetMyTeamDetail', common.connectObj({
                 dateTime: this.formDate,
                 searchTel: this.searchTel,
+                pageIndex: this.currentPage,
+                pageSize: PAGE_SIZE,
             })).then((res) => {
                 let { returnCode, returnMsg, data } = res;
                 if (returnCode == 100) {
-                    if (data && data.length > 0) {
-                        this.teamList = data.map((item) => Object.assign({}, item, {
+                    if (data) {
+                        this.childNum = data.childNum;
+                        this.teamNum = data.teamNum;
+                        let list = data.myChilds || [];
+                        this.teamList = list.map((item) => Object.assign({}, item, {
                             register_time: this.$moment(item.register_time).format('YYYY/MM/DD HH:mm:ss')
                         }));
                     }
@@ -211,10 +236,10 @@ export default {
         .deco {
             padding: 10px;
             text-align: center;
-            // display: flex;
-            // align-items: center;
-            // justify-content: center;
-            // background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            background-color: #f5f5f5;
             // .handle {
             //     color: #03a9f3;
             //     padding: 10px 15px;
@@ -257,6 +282,14 @@ export default {
                     padding: 5px 0;
                 }
             }
+        }
+        .van-pagination {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #fff;
+            z-index: 1;
+            padding-top: 5px;
         }
     }
     .team-dialog {

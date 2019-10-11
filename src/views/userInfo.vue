@@ -1,14 +1,16 @@
 <template>
-<div class='user-info'>
+<div class='user-info bg-f5'>
     <topbar title="个人资料"></topbar>
     <div class="container">
         <div class="form-wp">
             <div class="tip">请填写你的信息</div>
             <van-cell-group>
-                <van-field :value="user.tel" label="账号" disabled placeholder="请输入用户名" />
-                <van-field :value="user.parentid" label="我的上级" disabled placeholder="请输入用户名" />
-                <van-field v-model="name" label="呢称" placeholder="请输入用户名" />
+                <van-field :value="user.tel" label="账号：" disabled placeholder="请输入用户名" />
+                <van-field :value="user.parentid" label="我的上级：" disabled placeholder="请输入用户名" />
+                <van-field v-model="name" label="呢称：" placeholder="请输入用户名" />
             </van-cell-group>
+            <van-cell @click="vDialog=true" title="V：" :value="wechat || '设置微信号'" is-link />
+            <van-cell title="修改密码" is-link to="/user/password" />
         </div>
         <div class="form-wp">
             <div class="tip">提现支付宝信息（以下请填写真实信息，账号和姓名要对应）</div>
@@ -30,6 +32,22 @@
             <van-button class="btn" type="info" @click="submit">确定提交</van-button>
         </div>
     </div>
+    <van-dialog
+        v-model="vDialog"
+        title="设置微信号"
+        show-cancel-button
+        confirm-button-text="提交"
+        :before-close="beforeCloseV"
+    >
+        <div class="dialog-content">
+            <div class="form-wp">
+                <van-cell-group>
+                    <van-field v-model="wechat" type="text" placeholder="输入微信号">
+                    </van-field>
+                </van-cell-group>
+            </div>
+        </div>
+    </van-dialog>
 </div>
 </template>
 
@@ -56,6 +74,8 @@ export default {
             alipay_acount: '',
             alipay_name: '',
             verifyCode: '',
+            wechat: '',
+            vDialog: false,
         };
     },
     computed: {
@@ -104,6 +124,30 @@ export default {
                     this.$router.push('/user');
                 }
             })
+        },
+        beforeCloseV(action, done) {
+            if (action === 'confirm') {
+                if (!this.wechat) {
+                    this.$notify('请输入微信号');
+                    done(false);
+                    return false;
+                }
+                this.$fly.get('/api/User/SetMyWechat', {
+                    wechat: this.wechat
+                }).then((res) => {
+                    let { returnCode, returnMsg, data } = res;
+                    if (returnCode == 100) {
+                        this.$toast(returnMsg);  
+                        done();
+                    } else {
+                        this.$notify(returnMsg); 
+                        done(false);
+                    }
+                })
+            } else {
+                this.wechat = '';
+                done();
+            }
         }
     },
     mounted() {
@@ -111,6 +155,7 @@ export default {
             this.name = this.user.name;
             this.alipay_name = this.user.alipay_name || '';
             this.alipay_acount = this.user.alipay_acount || '';
+            this.wechat = this.user.wechat || '';
         })
     },
 }
@@ -135,6 +180,7 @@ export default {
         .van-cell {
             line-height: 30/11rem;
             font-size: 15/11rem;
+            align-items: center;
         }
         .flex-box {
             display: flex;
@@ -151,6 +197,25 @@ export default {
         .btn {
             width: 100%;
             border-radius: 6px;
+        }
+    }
+    .dialog-content {
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        .form-wp {
+            padding: 15px 0;
+            box-shadow: 0 0 8px #eee;
+            border-radius: 8px;
+            width: 100%;
+            .van-cell {
+                background-color: #eee;
+            }
+            .center {
+                display: flex;
+                justify-content: center;
+            }
         }
     }
 }

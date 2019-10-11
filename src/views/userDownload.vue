@@ -47,8 +47,8 @@ export default {
             androidcode: null,
             ioscode: null,
             isWx: false,
-            androidUrl: 'https://www.mali126.com/download/android/mali.apk',
-            iosUrl: 'https://www.iruffe.com/a319',
+            androidUrl: 'http://baourl.cn/MzE5',
+            iosUrl: 'http://baourl.cn/MzE5',
         };
     },
     methods: {

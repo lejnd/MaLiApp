@@ -10,8 +10,7 @@
                     <div class="info">
                         <div class="money">
                             <div>
-                                <h3 v-if="item.subMonty != 0">下级辅助：<strong>{{item.subMonty}}</strong></h3>
-                                <h3 v-if="item.beforeMoney != 0">任务奖励：<strong>{{item.beforeMoney}}</strong></h3>
+                                <h3>{{item.businessTypeDes}}：<strong>{{item.amount}}</strong></h3>
                             </div>
                             <!-- <p>卡商价格：{{item.afterMoney}}</p> -->
                         </div>

@@ -11,6 +11,7 @@ module.exports = {
         proxy: {
             '/api': {
                 target: 'https://www.mali126.com/', 
+                // target: 'http://test.api.mali666.com:9004',  // test
                 changOrigin: true,
                 secure: false,
                 pathRewrite: {

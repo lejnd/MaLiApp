@@ -5,41 +5,13 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
 
 export default {
     methods: {
-        ...mapActions([
-            'setNoticeId',
-        ]),
-        // 公告
-        getNotice() {
-            return this.$fly.get('/api/Task/GetNotice')
-            .then((res) => {
-                let { returnCode, returnMsg, data } = res;
-                if (returnCode == 100) {
-                    return Promise.resolve(data)
-                }             
-            })
-        }
+
     },
     mounted () {
-        // 公告alert
-        this.getNotice().then((res) => {
-            this.setNoticeId(res.id);
-            if (res.is_show && !localStorage.getItem(`notice_${res.id}`)) {
-                this.$dialog.confirm({
-                    title: '公告',
-                    message: res.content,
-                    messageAlign: 'left',
-                    cancelButtonText: '不再显示'
-                }).then(() => {
-
-                }).catch(() => {
-                    localStorage.setItem(`notice_${res.id}`, 1)
-                }); 
-            }          
-        })
+        
     }
 }
 </script>
