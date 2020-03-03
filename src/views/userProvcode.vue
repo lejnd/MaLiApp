@@ -25,7 +25,8 @@
 
 <script>
 import Topbar from '@/components/top-bar.vue';
-import common from '../components/common';
+import common from '@/components/common';
+import config from '@/config';
 import { mapGetters, mapActions } from 'vuex';
 import { Promise } from 'q';
 
@@ -35,7 +36,7 @@ export default {
     data() {
         return {
             region: '',
-            regionOpt: [],
+            regionOpt: config.regions,
             isDisabled: true,
             toast: null,
         };
@@ -47,23 +48,24 @@ export default {
     },
     methods: {
         ...mapActions([
-            'getUserInfo'
+            'getUserInfo',
+            'setProvcodeTemp'
         ]),
-        getRegionList() {
-            return this.$fly.get('/api/Task/GetProvince')
-            .then((res) => {
-                let { returnCode, returnMsg, data } = res;
-                if (returnCode == 100) {
-                    let list = data.map(item => ({
-                        text: item.province_name,
-                        value: item.province_code,
-                    }))
-                    this.regionOpt = list.filter(item => item.value != '0')
-                } else {
-                    this.$toast(returnMsg);
-                }
-            })
-        },
+        // getRegionList() {
+        //     return this.$fly.get('/api/Task/GetProvince')
+        //     .then((res) => {
+        //         let { returnCode, returnMsg, data } = res;
+        //         if (returnCode == 100) {
+        //             let list = data.map(item => ({
+        //                 text: item.province_name,
+        //                 value: item.province_code,
+        //             }))
+        //             this.regionOpt = list.filter(item => item.value != '0')
+        //         } else {
+        //             this.$toast(returnMsg);
+        //         }
+        //     })
+        // },
         // getProvinceByTel() {
         //     return this.$fly.get('/api/Task/GetProvinceByTel')
         //     .then((res) => {
@@ -85,12 +87,7 @@ export default {
                 if (returnCode == 100) {
                     this.region = data.province_code;
                 } else {
-                    this.$dialog.alert({
-                        title: '提示',
-                        message: '请手动设置归属地，以便顺利做任务，归属地设置后不能更改！',
-                    }).then(() => {
-                        this.isDisabled = false;
-                    })
+                    this.getGeoError();
                     return Promise.reject()
                 }
             })
@@ -104,6 +101,7 @@ export default {
             .then((res) => {
                 let { returnCode, returnMsg, data } = res;
                 if (returnCode == 100) {
+                    this.setProvcodeTemp(this.region);
                     this.$toast('设置成功');
                     this.$router.replace('/');
                 } else {
@@ -135,12 +133,7 @@ export default {
                 }, function(e){
                     console.log('Geolocation error: ' + e.message);
                     vm.toast.clear()
-                    vm.$dialog.alert({
-                        title: '提示',
-                        message: '请手动设置归属地，以便顺利做任务，归属地设置后不能更改！',
-                    }).then(() => {
-                        this.isDisabled = false;
-                    })
+                    vm.getGeoError();
                 });
             }  
         },
@@ -178,29 +171,40 @@ export default {
                 showMessage()
                 switch (error.code) {
                     case 1:
-                        console.log("位置服务被拒绝,请确保已开启定位功能并允许。");
+                        vm.$toast("位置服务被拒绝,请确保已开启定位功能并允许。");
                         break;
                     case 2:
-                        console.log("暂时获取不到位置信息。");
+                        vm.$toast("暂时获取不到位置信息。");
                         break;
                     case 3:
-                        console.log("获取信息超时。");
+                        vm.$toast("获取信息超时。");
                         break;
                     default:
-                        console.log("未知错误。");
+                        vm.$toast("未知错误。");
                         break;
                 }
             };
             function showMessage() {
                 vm.toast.clear()
-                vm.$dialog.alert({
+                vm.getGeoError()
+            }
+        },
+        // 为成功获取定位的操作
+        getGeoError() {
+            if (this.userInfo.provcode == '0') {
+                this.$dialog.alert({
                     title: '提示',
                     message: '请手动设置归属地，以便顺利做任务，归属地设置后不能更改！',
                 }).then(() => {
-                    vm.isDisabled = false;
+                    this.isDisabled = false;
+                })
+            } else {
+                this.$dialog.alert({
+                    title: '提示',
+                    message: '未能成功获取定位，请重试',
                 })
             }
-        }  
+        }
     },
     mounted() { 
         // this.getProvinceByTel().then(() => {
@@ -209,7 +213,7 @@ export default {
         //     this.$toast('获取地址失败，请手动选择归属地');
         // });
         this.getUserInfo().then(() => {
-            this.getRegionList();
+            // this.getRegionList();  使用本地的地区列表
             if (this.userInfo.provcode == '0') {
                 this.getGeo();
             } else {

@@ -23,7 +23,7 @@
                 <span @click="amount = account_money">全部提现</span>
             </div>
             <div class="btn-group">
-                <van-button class="btn" type="info" @click="cashout">提现</van-button>
+                <van-button class="btn" type="info" :loading="btnLoading" @click="cashout">提现</van-button>
                 <!-- <van-button class="btn" type="primary" @click="cashoutAll">全部提现</van-button> -->
             </div>
         </div>
@@ -45,6 +45,7 @@ export default {
             isAll: false,
             amount: 0,
             alipay: '',
+            btnLoading: false,
         };
     },
     computed: {
@@ -71,14 +72,15 @@ export default {
                 this.$router.push('/user/info');
                 return false;
             }
-            if (this.amount < 20) {
-                this.$notify('提现金额不能小于20元');
+            if (this.amount < 30) {
+                this.$notify('提现金额不能小于30元');
                 return false;
             }
             if (this.amount > this.account_money) {
                 this.$notify('提现金额不能大于账户余额');
                 return false;
             }
+            this.btnLoading = true;
             this.$fly.get('/api/User/WithDrawAccountMoney', common.connectObj({
                 amount: this.amount,
                 alipayAccount: this.userInfo.alipay_acount,
@@ -90,6 +92,8 @@ export default {
                 } else {
                     this.$toast(returnMsg)
                 }
+            }).finally(() => {
+                this.btnLoading = false;
             })
         }
     },

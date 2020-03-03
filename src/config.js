@@ -1,8 +1,8 @@
 export default {
     regions: [
         { text: '全部', value: '0' },
-        { text: '未知省份', value: '1' },
-        { text: '不填资料(港澳台、国外)', value: '100000' },
+        // { text: '未知省份', value: '1' },
+        { text: '不填资料(港澳台,国外)', value: '1' },
         { text: '北京市', value: '110000' },
         { text: '天津', value: '120000' },
         { text: '河北', value: '130000' },

@@ -6,6 +6,8 @@
             <van-cell-group>
                 <van-field v-model="taskId" type="number" label="申诉任务ID" placeholder="请输入要申诉的任务ID">
                 </van-field>
+                <van-field v-model="remark" type="textarea" label="申诉原因" maxlength="500" placeholder="输入申诉原因，至少10个字">
+                </van-field>
             </van-cell-group>
             <div class="deco">
                 <p class="tip">
@@ -21,7 +23,7 @@
         </div>
         <div class="section">
             <p>申诉说明：</p>
-            <p>1、当任务结果被误判时，可以提交申诉，仅限当天任务</p>
+            <p>1、确定是辅助成功的订单，却被商家判定为失败，需要在40分钟内尽快申诉，防止超过申诉时间。</p>
             <p>2、提交申诉后，3小时内会公布申诉结果</p>
             <p>3、一天最多可申诉5个任务</p>
         </div>
@@ -39,6 +41,7 @@ export default {
     data() {
         return {
             taskId: '',
+            remark: '',
         };
     },
     methods: {
@@ -47,8 +50,17 @@ export default {
                 this.$notify('请输入申诉任务ID')
                 return false
             }
+            if (!this.remark) {
+                this.$notify('请输入申诉原因')
+                return false
+            }
+            if (this.remark.length < 10) {
+                this.$notify('申诉原因至少10个字')
+                return false
+            }
             this.$fly.get('/api/User/ComplainTask', common.connectObj({
                 taskId: this.taskId,
+                remark: this.remark,
             })).then((res) => {
                 let { returnCode, returnMsg, data } = res;
                 this.$toast(returnMsg);

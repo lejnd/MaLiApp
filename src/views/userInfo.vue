@@ -6,7 +6,8 @@
             <div class="tip">请填写你的信息</div>
             <van-cell-group>
                 <van-field :value="user.tel" label="账号：" disabled placeholder="请输入用户名" />
-                <van-field :value="user.parentid" label="我的上级：" disabled placeholder="请输入用户名" />
+                <van-field v-if="user.type==2" value="平台合伙人" label="身份认证：" disabled />
+                <van-field v-else :value="user.parentid" label="我的上级：" disabled />
                 <van-field v-model="name" label="呢称：" placeholder="请输入用户名" />
             </van-cell-group>
             <van-cell @click="vDialog=true" title="V：" :value="wechat || '设置微信号'" is-link />

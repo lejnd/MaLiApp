@@ -106,6 +106,72 @@ export default new Router({
             path: '/user/password',
             name: 'UserPassword',
             component: () => import(/* webpackChunkName: "UserPassword" */ './views/userPassword.vue')
-        }
+        },
+        {
+            path: '/user/feedback',
+            name: 'UserFeedback',
+            component: () => import(/* webpackChunkName: "UserFeedback" */ './views/userFeedback.vue')
+        },
+        {
+            path: '/user/feedback_logs',
+            name: 'UserFeedbackLogs',
+            component: () => import(/* webpackChunkName: "UserFeedbackLogs" */ './views/userFeedbackLogs.vue')
+        },
+        {
+            path: '/user/qrcode',
+            name: 'userQrcode',
+            component: () => import(/* webpackChunkName: "userQrcode" */ './views/userQrcode.vue')
+        },
+        {
+            path: '/user/qrcodeAction',
+            name: 'userQrcodeAction',
+            component: () => import(/* webpackChunkName: "userQrcodeAction" */ './views/userQrcodeAction.vue')
+        },
+        {
+            path: '/ranking',
+            name: 'ranking',
+            component: () => import(/* webpackChunkName: "ranking" */ './views/ranking.vue')
+        },
+        {
+            path: '/notices',
+            name: 'notices',
+            component: () => import(/* webpackChunkName: "notices" */ './views/notices.vue')
+        },
+        {
+            path: '/master',
+            name: 'userMaster',
+            component: () => import(/* webpackChunkName: "userMaster" */ './views/master/index.vue')
+        },
+        {
+            path: '/master/memberRank',
+            name: 'memberRank',
+            component: () => import(/* webpackChunkName: "memberRank" */ './views/master/memberRank.vue')
+        },
+        {
+            path: '/master/taskList',
+            name: 'masterTask',
+            component: () => import(/* webpackChunkName: "masterTask" */ './views/master/taskList.vue')
+        },
+        {
+            path: '/master/partnerRank',
+            name: 'partnerRank',
+            component: () => import(/* webpackChunkName: "partnerRank" */ './views/master/partnerRank.vue')
+        },
+        {
+            path: '/master/memberList',
+            name: 'memberList',
+            component: () => import(/* webpackChunkName: "memberList" */ './views/master/memberList.vue')
+        },
+        {
+            path: '/master/partnerList',
+            name: 'partnerList',
+            component: () => import(/* webpackChunkName: "partnerList" */ './views/master/partnerList.vue')
+        },
+        {
+            path: '/master/partnerIncome',
+            name: 'partnerIncome',
+            component: () => import(/* webpackChunkName: "partnerIncome" */ './views/master/partnerIncome.vue')
+        },
+        
     ]
 })

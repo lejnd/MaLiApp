@@ -1,9 +1,13 @@
 <template>
 <div class='order-list'>
     <date-select @getDate="getDate"></date-select>
-    <van-tabs v-model="active">
+    <van-tabs v-model="active" @change="getTaskCenter">
         <van-tab title="任务中">
             <div class="list">
+                <p class="tip">
+                    <span class="title">提示：</span>
+                    确定是辅助成功的订单，却被商家判定为失败，需要在40分钟内尽快申诉，防止超过申诉时间。
+                </p>
                 <div class="nothing" v-if="aList.length <= 0">
                     {{nothingText}}
                 </div>
@@ -16,6 +20,7 @@
                         <div class="timer">
                             <h3>剩余时间：</h3>
                             <overtime :create="task.create_time" :expire="task.expire_time" @timeover="removeTask(task.task_id)"></overtime>
+                            <van-tag v-if="task.user_hand_remark" type="success">{{task.user_hand_remark}}</van-tag>
                         </div>
                         <van-button class="btn" type="info" @click="gotoDetail(task)">做任务</van-button>
                     </div>
@@ -24,6 +29,10 @@
         </van-tab>
         <van-tab title="任务完成">
             <div class="list">
+                <p class="tip">
+                    <span class="title">提示：</span>
+                    确定是辅助成功的订单，却被商家判定为失败，需要在40分钟内尽快申诉，防止超过申诉时间。
+                </p>
                 <div class="nothing" v-if="bList.length <= 0">
                     {{nothingText}}
                 </div>
@@ -35,14 +44,19 @@
                     <div class="item-row">
                         <div class="timer">
                             <h3>{{task.formatTime}}</h3>
+                            <van-tag v-if="task.user_hand_remark" type="success">{{task.user_hand_remark}}</van-tag>
                         </div>
-                        <span class="task-status">{{task.task_status_des}}</span>
+                        <span class="task-status">{{task.status_des}}</span>
                     </div>
                 </div>
             </div>
         </van-tab>
         <van-tab title="任务失败">
             <div class="list">
+                <p class="tip">
+                    <span class="title">提示：</span>
+                    确定是辅助成功的订单，却被商家判定为失败，需要在40分钟内尽快申诉，防止超过申诉时间。
+                </p>
                 <div class="nothing" v-if="cList.length <= 0">
                     {{nothingText}}
                 </div>
@@ -54,10 +68,11 @@
                     <div class="item-row">
                         <div class="timer">
                             <h3>{{task.formatTime}}</h3>
+                            <van-tag v-if="task.user_hand_remark" type="success">{{task.user_hand_remark}}</van-tag>
                         </div>
-                        <span class="task-status">{{task.task_status_des}}</span>
+                        <span class="task-status">{{task.status_des}}</span>
                     </div>
-                    <div class="btn-wp" v-if="task.task_status == 6">
+                    <div class="btn-wp" v-if="task.status == 6">
                         <van-button type="info" size="mini" :to="`/user/appeal?id=${task.task_id}`">申诉</van-button>
                     </div>
                 </div>
@@ -65,6 +80,10 @@
         </van-tab>
         <van-tab title="申诉">
             <div class="list">
+                <p class="tip">
+                    <span class="title">提示：</span>
+                    确定是辅助成功的订单，却被商家判定为失败，需要在40分钟内尽快申诉，防止超过申诉时间。
+                </p>
                 <div class="nothing" v-if="dList.length <= 0">
                     {{nothingText}}
                 </div>
@@ -76,8 +95,9 @@
                     <div class="item-row">
                         <div class="timer">
                             <h3>{{task.formatTime}}</h3>
+                            <van-tag v-if="task.user_hand_remark" type="success">{{task.user_hand_remark}}</van-tag>
                         </div>
-                        <span class="task-status">{{task.task_status_des}}</span>
+                        <span class="task-status">{{task.status_des}}</span>
                     </div>
                 </div>
             </div>
@@ -114,12 +134,12 @@ export default {
             this.getTaskCenter();
         },
         removeTask(id) {
-            setTimeout(() => {
-                this.aList = this.aList.filter((task) => task.task_id != id);
-                // this.$fly.get('/api/Task/TaskOverTime', common.connectObj({
-                //     taskId: id
-                // }))
-            }, 0)
+            // setTimeout(() => {
+            //     this.aList = this.aList.filter((task) => task.task_id != id);
+            //     // this.$fly.get('/api/Task/TaskOverTime', common.connectObj({
+            //     //     taskId: id
+            //     // }))
+            // }, 0)
         },
         getTaskCenter() {
             this.$fly.get('/api/Task/GetTaskCenter', common.connectObj({
@@ -135,13 +155,27 @@ export default {
                     c、任务失败：3、6
                     d、申诉：>=8
                     ***/
-                    this.aList = data.filter((item) => item.task_status == 2);
+                    this.aList = data.filter((item) => item.status == 2);
                     let newData = data.map((item) => Object.assign({}, item, {
                         formatTime: this.$moment(item.create_time).format('YYYY/MM/DD HH:mm:ss')
                     }))
-                    this.bList = newData.filter((item) => item.task_status == 1 || item.task_status == 5);
-                    this.cList = newData.filter((item) => item.task_status == 3 || item.task_status == 6);
-                    this.dList = newData.filter((item) => item.task_status >= 8);
+                    this.bList = newData.filter((item) => item.status == 1 || item.status == 5);
+                    this.cList = newData.filter((item) => item.status == 3 || item.status == 6);
+                    this.dList = newData.filter((item) => item.status >= 8);
+                    // 测试数据
+                    // this.aList = [{
+                    //     create_time: "2019-10-19T02:00:41",
+                    //     expire_time: 300,
+                    //     id: "1185254410998124544",
+                    //     price: 9.11,
+                    //     qrcode_url: "weixin110.qq.com/e5",
+                    //     status: 5,
+                    //     status_des: "任务中",
+                    //     task_id: "1185254383219249152",
+                    //     tel: "18388064350",
+                    //     type: 2,
+                    //     user_hand_remark: "我已辅助成功"
+                    // }]
                 } else {
                     this.$toast(returnMsg);
                 }
@@ -176,6 +210,14 @@ export default {
         background-color: #ffbe2d;
     }
     .list {
+        .tip {
+            font-size: 12/11rem;
+            padding: 0px 0 15px 0;
+            color: #888;
+            .title {
+                color: #f40;
+            }
+        }
         .nothing {
             text-align: center;
             font-size: 15/11rem;

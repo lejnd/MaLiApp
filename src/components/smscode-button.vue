@@ -17,7 +17,7 @@
     >
         <div class="code-dialog">
             <h3>看不清？点击更换</h3>
-            <img class="img-code" src="/api/User/ValidateCode" onclick="this.src = this.src + '?'">
+            <img ref="validateCode" class="img-code" src="/api/User/ValidateCode" onclick="this.src = this.src + '?'">
             <van-cell-group class="img-code-input">
                 <van-field
                     v-model="imgCode"
@@ -83,6 +83,9 @@ export default {
                 return false
             }
             this.showImgCode = true;
+            this.$nextTick(() => {
+                this.$refs.validateCode.src = this.$refs.validateCode.src + '?';
+            })
             // this.smsInterval();
             // this.$emit('getCode', this.mobile);
         },

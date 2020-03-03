@@ -44,10 +44,11 @@
                 <van-checkbox v-model="accessChecked">
                     已阅读并同意
                 </van-checkbox>
-                <span class="deco" @click="showAuthDialog=true">《码力任务平台注册协议》</span>
+                <span class="deco" @click="showAuthDialog=true">《闪电任务平台注册协议》</span>
             </div>
             <div class="deco-btn">
-                <span @click="loginTypeSwich">{{loginTypeText}}<van-icon name="exchange"/></span>
+                <!-- <span @click="loginTypeSwich">{{loginTypeText}}<van-icon name="exchange"/></span> -->
+                <span @click="gotoPassword">忘记密码</span>
             </div>
             <!-- <van-button class="submit deco-btn" icon="exchange" type="primary">{{loginTypeText}}</van-button> -->
             <van-button class="submit" type="primary" @click="submitLogin">登 录</van-button>
@@ -96,7 +97,7 @@
     </van-tabs>
     <van-dialog
         v-model="showAuthDialog"
-        title="《码力任务平台注册协议》">
+        title="《闪电任务平台注册协议》">
         <div class="auth-agreement" v-html="authAgreement"></div>
     </van-dialog>
 </div>
@@ -225,7 +226,7 @@ export default {
                 return false
             }
             if (!this.accessChecked) {
-                this.$notify('请同意《码力任务平台注册协议》')
+                this.$notify('请同意《闪电任务平台注册协议》')
                 return false
             }
             let data = {
@@ -253,11 +254,15 @@ export default {
                     this.$notify(returnMsg);
                 }
             })
+        },
+        gotoPassword() {
+            this.$router.push('/user/password?forget=1')
         }
     },
     mounted() {
         this.activeName = this.$route.query.active || 'a';
         this.invitationCode = this.$route.query.code || '';
+        this.tel = this.$route.query.tel || '';
     },
 }
 </script>
@@ -288,7 +293,7 @@ export default {
     .access {
         font-size: 14/11rem;
         margin-left: 5/11rem;
-        margin: 10px 0 20px 0;
+        margin: 10px 0;
         display: flex;
         align-items: center;
         .deco {
@@ -370,11 +375,14 @@ export default {
         }
     }
     .deco-btn {
-        text-align: center;
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 5px;
+        // margin-bottom: 10px;
         span {
-            padding: 8px;
-            font-size: 15/11rem;
+            padding: 8px 0;
+            font-size: 13/11rem;
             color: #409eff;
             .van-icon {
                 vertical-align: middle;

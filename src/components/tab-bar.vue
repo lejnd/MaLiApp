@@ -3,6 +3,7 @@
     <van-tabbar v-model="thisActive">
         <van-tabbar-item icon="bill" to="/">接单首页</van-tabbar-item>
         <van-tabbar-item icon="todo-list" to="/order">做单记录</van-tabbar-item>
+        <van-tabbar-item icon="good-job" to="/ranking">接单榜</van-tabbar-item>
         <van-tabbar-item icon="manager" to="/user">用户中心</van-tabbar-item>
     </van-tabbar>
 </div>

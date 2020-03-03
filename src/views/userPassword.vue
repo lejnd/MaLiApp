@@ -9,14 +9,17 @@
             <van-cell-group>
                 <van-field v-model="password2" type="password" placeholder="再次确认密码" />
             </van-cell-group>
-            <div class="deco">修改密码安全验证，验证码将发送到您的手机 {{myTel}}</div>
+            <van-cell-group v-if="isForget==1">
+                <van-field v-model="inputTel" type="tel" placeholder="输入手机号码" />
+            </van-cell-group>
+            <div class="deco" v-else>修改密码安全验证，验证码将发送到您的手机 {{myTel}}</div>
             <van-cell-group class="flex-box">
                 <van-field
                     v-model="verifyCode"
                     type="tel"
                     placeholder="输入短信验证码"
                 />
-                <smscode-btn :btn-style="codeBtnStyle" apiurl="/api/User/ResetPasswordVerifyCode" :mobile="mobile"></smscode-btn>
+                <smscode-btn :btn-style="codeBtnStyle" :apiurl="isForget==1 ? '/api/User/RegisterVerifyCode?type=1' : '/api/User/ResetPasswordVerifyCode'" :mobile="isForget==1?inputTel:mobile"></smscode-btn>
             </van-cell-group>
         </div>
         <div class="btn-group">
@@ -45,9 +48,11 @@ export default {
                 marginLeft: '10px',
                 height: '50px',
             },
+            isForget: '',
             verifyCode: '',
             password: '',
             password2: '',
+            inputTel: '',
         };
     },
     computed: {
@@ -89,21 +94,27 @@ export default {
                 this.$notify('请输入验证码')
                 return false
             }
-            this.$fly.post('/api/User/UpdatePassword', common.connectObj({
-                "userType": 0,
-                "verifyCode": this.verifyCode,
-                "password": this.password
-            })).then((res) => {
+            this.$fly.post('/api/User/UpdatePassword', {
+                userType: 0,
+                tel: this.isForget == 1 ? this.inputTel : this.user.tel,
+                verifyCode: this.verifyCode,
+                password: this.password
+            }).then((res) => {
                 let { returnCode, returnMsg } = res;
                 this.$toast(returnMsg);
                 if (returnCode == 100) {
+                    this.isForget == 1 ?
+                    this.$router.replace(`/login?tel=${this.inputTel}`) :
                     this.$router.replace('/user');
                 }
             })
         }
     },
     mounted() {
-        this.getUserInfo()
+        this.isForget = this.$route.query.forget;
+        if (this.isForget != '1') {
+            this.getUserInfo()
+        }
     },
 }
 </script>

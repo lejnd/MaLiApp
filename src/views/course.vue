@@ -4,6 +4,7 @@
     <van-tabs v-model="active">
         <van-tab title="接单教程">
             <div class="container">
+                <a href="https://shimo.im/docs/xV9HkDJVWkX6Py3t/read">微信扫码辅助项目资料介绍</a>
                 <div v-html="htmlText"></div>
                 <img src="../assets/img/course1.jpeg" alt="">
                 <img src="../assets/img/course2.jpeg" alt="">

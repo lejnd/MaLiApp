@@ -43,12 +43,16 @@
     </div>
     <div class="my-team">
         <div class="item" @click="gotoReopen">
-            <van-icon name="lock" size="20" color="#03a9f3" />
+            <van-icon name="lock" size="16" color="#03a9f3" />
             <span>申请解禁</span>
         </div>
         <div class="item" @click="gotoAppeal">
-            <van-icon name="service" size="20" color="#03a9f3" />
+            <van-icon name="service" size="16" color="#03a9f3" />
             <span>任务申诉</span>
+        </div>
+        <div class="item" @click="gotoFeedback">
+            <van-icon name="envelop-o" size="16" color="#03a9f3" />
+            <span>意见反馈</span>
         </div>
     </div>
     <div class="setting-list">
@@ -63,7 +67,10 @@
             <van-icon name="arrow" />
         </div>
     </div>
-    <tab-bar :active="2"></tab-bar>
+    <div class="side-btn0" v-show="getNoticeLoading" @click="getNotice">
+        <span>奖<br>励<br>机<br>制</span>
+    </div>
+    <tab-bar :active="3"></tab-bar>
 </div>
 </template>
 
@@ -77,6 +84,7 @@ export default {
     data() {
         return {
             settingList: [],
+            getNoticeLoading: true,
         };
     },
     computed: {
@@ -100,6 +108,9 @@ export default {
         gotoAppeal() {
             this.$router.push('/user/appeal');
         },
+        gotoFeedback() {
+            this.$router.push('/user/feedback');
+        },
         loginout() {
             this.$dialog.confirm({
                 message: '确定要退出登录吗？'
@@ -114,19 +125,52 @@ export default {
                     this.$toash('注销失败')
                 })
             })
+        },
+        getNotice() {
+            this.getNoticeLoading = false;
+            this.$fly.get('/api/Task/GetNotice', { type: 8 })
+            .then((res) => {
+                let { returnCode, returnMsg, data } = res;
+                if (returnCode == 100) {
+                    this.$dialog.alert({
+                        title: '奖励机制',
+                        message: data.content,
+                        messageAlign: 'left',
+                        confirmButtonText: '了解了'
+                    })
+                } else {
+                    this.$toast(returnMsg)
+                }         
+            }).finally(() => {
+                this.getNoticeLoading = true;
+            })
         }
     },
     mounted() {
         this.getUserInfo().then(() => {
+            let masterStr = '';
+            if (this.user.type == 1) {
+                masterStr = '总代特权'
+            } else if (this.user.type == 2) {
+                masterStr = '合伙人特权'
+            } else if (this.user.is_child_partner==1 ) {
+                // masterStr = '子合伙人特权'
+                masterStr = '合伙人特权'
+            }
             this.settingList = [
-                { to: '/user/info', name: '账户资料' },
-                { to: '/user/provcode', name: '设置归属地' },
-                { to: '/user/data', name: '数据统计' },
-                { to: '/user/team', name: '我的团队' },
-                { to: '/user/setcommission', name: '抽成设置' },
-                { to: `/user/invite?code=${this.user.invitation_code}`, name: '邀请下级' },
-                { to: '/user/download', name: 'APP下载' },
+                { id: 1, to: '/user/info', name: '账户资料' },
+                { id: 2, to: '/user/qrcode', name: '专属固定码' },
+                { id: 3, to: `/master?name=${masterStr}`, name: masterStr },
+                { id: 4, to: '/user/provcode', name: '设置归属地' },
+                { id: 5, to: '/user/data', name: '数据统计' },
+                { id: 6, to: '/user/team', name: '我的团队' },
+                { id: 7, to: '/user/setcommission', name: '抽成设置' },
+                { id: 8, to: `/user/invite?code=${this.user.invitation_code}`, name: this.user.type==2 ? '平台合伙人邀请' : '邀请下级' },
+                { id: 9, to: '/user/download', name: 'APP下载' },
             ]
+            if (this.user.type == 0 && this.user.is_child_partner != 1) {
+                this.settingList = this.settingList.filter(item => item.id!=3);
+            }
         })
     },
 }
@@ -137,7 +181,9 @@ export default {
 @my_yellow: #FFC107;
 .user-center {
     .header-wp {
-        background: linear-gradient(to top right, #03a9f3, #01bcd3);
+        // background: linear-gradient(to top right, #03a9f3, #01bcd3);
+        background: url('../assets/img/user-bg.png') no-repeat center center;
+        background-size: cover;
         color: #fff;
         .user {
             padding: 20px;
@@ -224,7 +270,7 @@ export default {
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 16/11rem;
+            font-size: 15/11rem;
             background-color: #f5f5f5;
             color: #787878;
             // &:first-child {
@@ -256,6 +302,17 @@ export default {
                 color: #666;
             }
         }
+    }
+    .side-btn0 {
+        position: fixed;
+        right: 0;
+        top: 90px;
+        background-color: #f80;
+        padding: 10px 7px;
+        border-radius: 6px 0 0 6px;
+        font-size: 12px;
+        color: #fffbe8;
+        box-shadow: 0 0 6px #aaa;
     }
 }
 </style>

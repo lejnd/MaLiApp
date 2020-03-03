@@ -27,6 +27,12 @@
 export default {
     name: 'DateSelect',
     components: {},
+    props: {
+        init: {
+            type: Number,
+            default: () => 0
+        }
+    },
     data() {
         return {
             dateShow: false,
@@ -36,6 +42,11 @@ export default {
     computed: {
         formDate() {      
             return this.$moment(this.currentDate).format('YYYY-MM-DD');
+        },
+        initDate() {
+            let Dates = new Date();
+            Dates.setDate(Dates.getDate() + this.init);
+            return Dates
         }
     },
     methods: {
@@ -43,6 +54,11 @@ export default {
             this.dateShow = true;
         },
         confirm() {
+            if (this.currentDate > this.initDate) {
+                this.currentDate = this.initDate;
+                this.$notify('日期不能大于当前日期');
+                return false;
+            }
             this.dateShow = false;
             this.$emit('getDate', this.formDate);
         },
@@ -51,6 +67,7 @@ export default {
         },
     },
     mounted() {
+        this.currentDate = this.initDate;
         this.$emit('getDate', this.formDate);
     },
 }

@@ -5,7 +5,7 @@
         <van-tab title="安卓APP下载">
             <div class="container">
                 <img class="logo" src="../assets/img/logo.jpeg" alt="">
-                <h3 class="title">码力安卓APP</h3>
+                <h3 class="title">闪电安卓APP</h3>
                 <van-button class="btn" round type="info" @click="gotoAndroid">点击下载</van-button>
                 <div class="qrcode" ref="android_qrcode"></div>
                 <p class="deco">扫描二维码安装</p>
@@ -18,7 +18,7 @@
         <van-tab title="苹果APP下载">
             <div class="container">
                 <img class="logo" src="../assets/img/logo.jpeg" alt="">
-                <h3 class="title">码力苹果APP</h3>
+                <h3 class="title">闪电苹果APP</h3>
                 <van-button class="btn" round type="info" @click="gotoIOS">点击下载</van-button>
                 <div class="qrcode" ref="ios_qrcode"></div>
                 <p class="deco">扫描二维码安装</p>
@@ -47,8 +47,8 @@ export default {
             androidcode: null,
             ioscode: null,
             isWx: false,
-            androidUrl: 'http://baourl.cn/MzE5',
-            iosUrl: 'http://baourl.cn/MzE5',
+            androidUrl: 'http://huggiesbb.com/yybe6j',
+            iosUrl: 'http://huggiesbb.com/yybe6j',
         };
     },
     methods: {

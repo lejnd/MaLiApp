@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import router from '../router'
+import crypto from './crypto'
 import fly from 'flyio';
 
 // const debug = process.env.NODE_ENV !== 'production'
@@ -16,11 +17,13 @@ import fly from 'flyio';
 
 //添加请求拦截器
 fly.interceptors.request.use((request)=>{
+    let auth = getAuthStr();
     //给所有请求添加自定义header
     request.headers['X-Tag']="flyio";
     request.headers['Authorization'] = localStorage.getItem('Authorization') || '';
     request.headers['Content-Type'] = 'application/json';
-    request.timeout = 8000;
+    request.headers['status'] = auth;
+    request.timeout = 16000;
     request.withCredentials = true;
     // return request;
 })
@@ -48,5 +51,15 @@ fly.interceptors.response.use(
         }
     }
 )
+
+function getAuthStr() {
+    const str1 = 'qwerty';
+    const str2 = 'ytrewq';
+    let nowTime = new Date().getTime();
+    let resTime = nowTime + 120*1000;
+    let res = crypto.encrypt(resTime.toString(), '1234567890' + str1, str2 + '0987654321')
+    // console.log(nowTime, resTime, res);
+    return res;
+}
 
 Vue.prototype.$fly = fly;

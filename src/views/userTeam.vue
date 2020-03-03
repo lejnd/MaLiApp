@@ -8,7 +8,6 @@
             placeholder="请输入下级的账号"
             show-action
             shape="round"
-            @search="searchHandler"
         >
             <van-button slot="action" @click="searchHandler" type="info" round size="small">搜索</van-button>
         </van-search>
@@ -22,24 +21,25 @@
         <div class="item" v-for="(item, index) in teamList" :key="index">
             <img class="icon" src="../assets/img/man.png" alt="">
             <div class="info">
-                <h3>{{item.tel}}</h3>
+                <h3>{{item.tel_hide}}</h3>
                 <h4 v-if="item.remak_name && item.remak_name!='0'">(备注：{{item.remak_name}})</h4>
                 <h4>(抽佣值：{{item.rate}}%)</h4>
                 <p>总做单：{{item.totaltaskcount}}</p>
                 <p>成功做单：{{item.totaltask_success_count}}</p>
                 <p>总成功率：{{item.success_rate}}</p>
-                <p>下级总做单：{{item.subtotaltaskcount}}</p>
+                <!-- <p>下级总做单：{{item.subtotaltaskcount}}</p>
                 <p>下级成功做单：{{item.subtotaltask_success_count}}</p>
-                <p>下级总成功率：{{item.subsuccess_rate}}</p>
+                <p>下级总成功率：{{item.subsuccess_rate}}</p> -->
                 <p>注册时间：{{item.register_time}}</p>
             </div>
             <div class="btn-group">
                 <p><van-button type="primary" size="small" @click="rateSetting(index, 'remark')">备注账号</van-button></p>
                 <p><van-button type="info" size="small" @click="rateSetting(index, 'rate')">重设利润</van-button></p>
+                <p><van-button type="info" plain size="small" @click="getChildDetail(item, index)" :loading="getChildDetailLoading==index">下级详情</van-button></p>                
             </div>
         </div>
         <van-pagination
-            v-if="childNum > 50"
+            v-if="childNum > 5"
             v-model="currentPage" 
             :page-count="pageCount"
             @change="getTeamList"
@@ -54,7 +54,7 @@
         <div class="team-dialog">
             <van-radio-group v-model="titleRadio">
                 <van-cell-group>
-                    <van-cell :title="`设置${item.tel}的抽成`" clickable @click="titleRadio = '1'">
+                    <van-cell :title="`设置${item.tel_hide}的抽成`" clickable @click="titleRadio = '1'">
                         <van-radio slot="right-icon" name="1" />
                     </van-cell>
                     <van-cell title="设置所有下级抽成" clickable @click="titleRadio = '2'">
@@ -79,11 +79,24 @@
         :before-close="beforeRemarkSettingClose"
     >
         <div class="team-dialog">
-            <h3 class="title">设置：{{item.tel}}的备注</h3>
+            <h3 class="title">设置：{{item.tel_hide}}的备注</h3>
             <van-cell-group>
                 <van-field v-model="remak_name" label="设置备注" placeholder="请输入备注">
                 </van-field>
             </van-cell-group>
+        </div>
+    </van-dialog>
+    <van-dialog
+        v-model="showChildDetail"
+        confirm-button-text="关闭"
+    >
+        <div class="team-dialog">
+            <h3 class="title detail-title">{{item.tel_hide}}的下级</h3>
+            <div class="detail">
+                <p>下级总做单：{{childDetail.subtotaltaskcount}}</p>
+                <p>下级成功做单：{{childDetail.subtotaltask_success_count}}</p>
+                <p>下级总成功率：{{childDetail.subsuccess_rate}}</p>
+            </div>
         </div>
     </van-dialog>
 </div>
@@ -95,7 +108,7 @@ import DateSelect from '@/components/date-select.vue';
 import common from '../components/common'
 import { mapActions, mapGetters } from 'vuex';
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 5;
 
 export default {
     name: 'UserTeam',
@@ -115,6 +128,10 @@ export default {
             titleRadio: '1',
             remak_name: '',
             currentPage: 1,
+
+            showChildDetail: false,
+            getChildDetailLoading: null,
+            childDetail: {},
         };
     },
     computed: {
@@ -134,18 +151,22 @@ export default {
         ]),
         getDate(date) {
             this.formDate = date;
+            this.getTeamList();
         },
         searchHandler() {
             this.currentPage = 1;
             this.getTeamList();
         },
         getTeamList() {
+            const toast = this.$toast.loading();
+            this.teamList = [];
             this.$fly.get('/api/User/GetMyTeamDetail', common.connectObj({
                 dateTime: this.formDate,
                 searchTel: this.searchTel,
                 pageIndex: this.currentPage,
                 pageSize: PAGE_SIZE,
             })).then((res) => {
+                toast.clear();
                 let { returnCode, returnMsg, data } = res;
                 if (returnCode == 100) {
                     if (data) {
@@ -153,12 +174,33 @@ export default {
                         this.teamNum = data.teamNum;
                         let list = data.myChilds || [];
                         this.teamList = list.map((item) => Object.assign({}, item, {
-                            register_time: this.$moment(item.register_time).format('YYYY/MM/DD HH:mm:ss')
+                            register_time: this.$moment(item.register_time).format('YYYY/MM/DD HH:mm:ss'),
+                            tel_hide: item.tel ? item.tel.toString().substr(0, 3) + '****' + item.tel.toString().substr(7, 4) : '',
                         }));
                     }
                 } else {
                     this.$toast(returnMsg)
                 }
+            })
+        },
+        getChildDetail(item, index) {
+            this.item = item;
+            this.getChildDetailLoading = index;
+            this.$fly.get('/api/User/GetMyTeamChildDetail', {
+                dateTime: this.formDate,
+                tel: item.tel,
+            }).then((res) => {
+                let { returnCode, returnMsg, data } = res;
+                if (returnCode == 100) {
+                    if (data) {
+                        this.childDetail = data || {};
+                        this.showChildDetail = true;
+                    }
+                } else {
+                    this.$toast(returnMsg)
+                }
+            }).finally(() => {
+                this.getChildDetailLoading = null;
             })
         },
         rateSetting(index, btnName) {
@@ -218,7 +260,6 @@ export default {
         },
     },
     mounted() {
-        this.getTeamList();
         this.getUserInfo().then(() => {
             this.estimatedPrice =  this.userInfo.estimated_price;
         });
@@ -301,10 +342,17 @@ export default {
             // color: #fff;
             // margin-bottom: 10px;
         }
+        .detail-title {
+            text-align: center;
+        }
         .deco {
             padding: 15px;
             color: #666;
             font-size: 12/11rem;
+        }
+        .detail {
+            text-align: center;
+            padding-bottom: 20px;
         }
     }
 }

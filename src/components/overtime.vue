@@ -54,7 +54,8 @@ export default {
                 this.formTime = this.formatSeconds(this.overtime);
                 this.overtime--;
             } else {
-                this.formTime = '任务超时';
+                // this.formTime = '任务超时';
+                this.formTime = '等待确认';
                 clearInterval(interval);
                 this.$emit('timeover');
             }

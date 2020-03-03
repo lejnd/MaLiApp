@@ -8,9 +8,10 @@
             <div class="content">
                 <p class="deco">您的邀请码</p>
                 <p class="big">{{invitation_code}}</p>
+                <!-- <p class="big">闪电云下云文化</p> -->
                 <p class="link" @click="copyText" :data-clipboard-text="link">{{link}}</p>
                 <p>点击链接复制</p>
-                <p class="deco">快快邀请好友来码力赚钱吧！</p>
+                <p class="deco">快快邀请好友来闪电赚钱吧！</p>
                 <div class="line"></div>
                 <dir class="qrcode" ref="qrcode"></dir>
                 <p class="deco">把二维码分享给好友吧</p>
@@ -60,7 +61,7 @@ export default {
     mounted() {
         this.invitation_code = this.$route.query.code;
         const host = window.location.host;
-        this.link = `https://${host}/login?active=b&code=${this.invitation_code}`;
+        this.link = `http://www.mali666.com/login?active=b&code=${this.invitation_code}`;
         this.initQrcode();
     },
 }
